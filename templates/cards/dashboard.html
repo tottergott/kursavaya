@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная панель — LangCards{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h4 mb-1">Панель изучения</h1>
+        <p class="text-muted small mb-0">Ваши языковые колоды и общая сводка прогресса</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'deck_create' %}" class="btn btn-primary">+ Создать колоду</a>
+        <a href="{% url 'stats' %}" class="btn btn-outline-secondary">Подробная статистика</a>
+    </div>
+</div>
+
+<!-- Общая сводка пользователя -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card bg-white h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Всего карточек</div>
+                <div class="h3 mb-0">{{ total_cards }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card bg-white h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Выучено</div>
+                <div class="h3 mb-0 text-success">{{ learned_cards }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card bg-white h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">На повторении (изучается)</div>
+                <div class="h3 mb-0 text-warning">{{ learning_cards }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card bg-white h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Новые (не просмотрены)</div>
+                <div class="h3 mb-0 text-secondary">{{ new_cards }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Список доступных колод -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 mb-0">Доступные колоды ({{ total_decks }})</h2>
+</div>
+
+{% if deck_rows %}
+<div class="row g-3">
+    {% for item in deck_rows %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card bg-white h-100 d-flex flex-column">
+            <div class="card-body flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h3 class="h6 mb-0">
+                        <a href="{% url 'deck_detail' item.deck.pk %}" class="text-decoration-none text-dark">
+                            {{ item.deck.title }}
+                        </a>
+                    </h3>
+                    <span class="badge bg-light text-dark border">
+                        {{ item.total_cards }} сл.
+                    </span>
+                </div>
+                <p class="text-muted small mb-3">
+                    {{ item.deck.source_language }} &rarr; {{ item.deck.target_language }}
+                </p>
+
+                <div class="mb-2 d-flex justify-content-between small text-muted">
+                    <span>Выучено: {{ item.learned_cards }} из {{ item.total_cards }}</span>
+                    <span>{{ item.mastery_percent }}%</span>
+                </div>
+                <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width: {{ item.mastery_percent }}%;"
+                         aria-valuenow="{{ item.mastery_percent }}" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+
+                <div class="small text-muted">
+                    На повторении: <strong>{{ item.learning_cards }}</strong> &middot;
+                    Новых: <strong>{{ item.new_cards }}</strong>
+                </div>
+            </div>
+            <div class="card-footer bg-white d-flex gap-2">
+                {% if item.total_cards > 0 %}
+                <a href="{% url 'deck_study' item.deck.pk %}?restart=1" class="btn btn-primary btn-sm flex-grow-1">
+                    Учить карточки
+                </a>
+                {% else %}
+                <a href="{% url 'deck_detail' item.deck.pk %}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                    Добавить слова
+                </a>
+                {% endif %}
+                <a href="{% url 'deck_detail' item.deck.pk %}" class="btn btn-outline-secondary btn-sm">
+                    Управление
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card bg-white">
+    <div class="card-body text-center py-5">
+        <p class="mb-3 text-muted">У вас пока нет ни одной языковой колоды.</p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="{% url 'deck_create' %}" class="btn btn-primary">Создать первую колоду</a>
+            <form method="post" action="{% url 'create_demo_deck' %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary">
+                    Загрузить демо-колоду «Английский: A1 Базовый»
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

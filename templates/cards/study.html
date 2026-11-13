@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Тренировка: {{ deck.title }} — LangCards{% endblock %}
+
+{% block content %}
+<div class="study-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <a href="{% url 'deck_detail' deck.pk %}" class="text-decoration-none small">&larr; Назад к колоде «{{ deck.title }}»</a>
+        </div>
+        <div class="small text-muted">
+            Карточка <strong>{{ current_position }}</strong> из <strong>{{ total_in_session }}</strong>
+        </div>
+    </div>
+
+    <div class="card bg-white">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
+            <span class="small text-muted">{{ deck.source_language }} &rarr; {{ deck.target_language }}</span>
+            <span>
+                {% if progress.status == 'learned' %}
+                    <span class="badge bg-success">{{ progress.get_status_display }}</span>
+                {% elif progress.status == 'learning' %}
+                    <span class="badge bg-warning text-dark">{{ progress.get_status_display }}</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ progress.get_status_display }}</span>
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="card-body text-center py-5 px-4">
+            <div class="text-muted small mb-2">Исходное слово / фраза</div>
+            <div class="study-word mb-4">{{ card.front_text }}</div>
+
+            {% if reveal %}
+                <hr class="my-4">
+                <div class="text-muted small mb-2">Перевод / толкование</div>
+                <div class="study-translation mb-3">{{ card.back_text }}</div>
+
+                {% if card.example %}
+                    <div class="p-3 bg-light border rounded text-muted small mx-auto" style="max-width: 480px;">
+                        <strong>Пример:</strong> {{ card.example }}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="card-footer bg-white p-3">
+            {% if not reveal %}
+                <a href="{% url 'deck_study' deck.pk %}?reveal=1" class="btn btn-primary w-100 py-2">
+                    Показать перевод / ответ
+                </a>
+            {% else %}
+                <form method="post" action="{% url 'deck_study' deck.pk %}">
+                    {% csrf_token %}
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="submit" name="result" value="forgot" class="btn btn-outline-danger w-100 py-2">
+                                Не помню
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="submit" name="result" value="remembered" class="btn btn-success w-100 py-2">
+                                Помню
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="text-center text-muted small mt-3">
+        Повторений этой карточки: {{ progress.review_count }} (успешно: {{ progress.success_count }})
+    </div>
+</div>
+{% endblock %}
+

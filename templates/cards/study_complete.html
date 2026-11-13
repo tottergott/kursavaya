@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Тренировка завершена — LangCards{% endblock %}
+
+{% block content %}
+<div class="study-card">
+    <div class="card bg-white text-center">
+        <div class="card-header bg-white py-3">
+            <h1 class="h5 mb-0">Тренировка колоды «{{ deck.title }}» завершена</h1>
+        </div>
+        <div class="card-body py-4">
+            <p class="text-muted mb-4">Вы просмотрели все карточки текущей сессии ({{ total_reviewed }} шт.).</p>
+
+            <div class="row g-3 justify-content-center mb-4">
+                <div class="col-5">
+                    <div class="p-3 border rounded">
+                        <div class="text-muted small">Помню</div>
+                        <div class="h4 text-success mb-0">{{ session_stats.remembered }}</div>
+                    </div>
+                </div>
+                <div class="col-5">
+                    <div class="p-3 border rounded">
+                        <div class="text-muted small">Не помню</div>
+                        <div class="h4 text-danger mb-0">{{ session_stats.forgot }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a href="{% url 'deck_study' deck.pk %}?restart=1" class="btn btn-primary">
+                    Пройти тренировку ещё раз
+                </a>
+                <a href="{% url 'deck_detail' deck.pk %}" class="btn btn-outline-secondary">
+                    К списку карточек
+                </a>
+                <a href="{% url 'stats' %}" class="btn btn-outline-secondary">
+                    Статистика
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

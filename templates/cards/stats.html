@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Статистика изучения — LangCards{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h4 mb-1">Статистика прогресса</h1>
+        <p class="text-muted small mb-0">Сводные показатели освоения слов по колодам</p>
+    </div>
+    <div>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">К списку колод</a>
+    </div>
+</div>
+
+<!-- Сводная карточка пользователя -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-white h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Освоение всех карточек</div>
+                <div class="h3 mb-2">{{ overall_mastery }}%</div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width: {{ overall_mastery }}%;"
+                         aria-valuenow="{{ overall_mastery }}" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+                <div class="small text-muted mt-2">Выучено {{ learned_cards }} из {{ total_cards }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-white h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Всего ответов в тренировках</div>
+                <div class="h3 mb-1">{{ total_reviews }}</div>
+                <div class="small text-muted">Успешных ответов: {{ total_success }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-white h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Точность ответов</div>
+                <div class="h3 mb-1">{{ overall_accuracy }}%</div>
+                <div class="small text-muted">На повторении: {{ learning_cards }} сл.</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-white h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Дата последней активности</div>
+                <div class="h6 mb-1 mt-2">
+                    {% if last_activity %}
+                        {{ last_activity|date:"d.m.Y H:i" }}
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </div>
+                <div class="small text-muted">Фиксируется при каждом ответе</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Таблица прогресса по каждой колоде -->
+<div class="card bg-white">
+    <div class="card-header bg-white py-3">
+        <h2 class="h6 mb-0">Процент освоения по колодам</h2>
+    </div>
+    {% if deck_rows %}
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Колода</th>
+                    <th style="width: 160px;">Выучено / Всего</th>
+                    <th style="width: 280px;">Прогресс освоения</th>
+                    <th style="width: 140px;">Точность</th>
+                    <th style="width: 180px;">Последняя активность</th>
+                    <th style="width: 130px;">Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in deck_rows %}
+                <tr>
+                    <td>
+                        <a href="{% url 'deck_detail' item.deck.pk %}" class="fw-semibold text-decoration-none text-dark">
+                            {{ item.deck.title }}
+                        </a>
+                        <div class="small text-muted">{{ item.deck.source_language }} &rarr; {{ item.deck.target_language }}</div>
+                    </td>
+                    <td>
+                        <strong>{{ item.learned_cards }}</strong> / {{ item.total_cards }}
+                        <div class="small text-muted">Изучается: {{ item.learning_cards }}</div>
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Освоено</span>
+                            <span class="fw-semibold">{{ item.mastery_percent }}%</span>
+                        </div>
+                        <div class="progress" style="height: 12px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: {{ item.mastery_percent }}%;"
+                                 aria-valuenow="{{ item.mastery_percent }}" aria-valuemin="0" aria-valuemax="100"
+                                 title="Выучено: {{ item.learned_cards }}">
+                            </div>
+                            <div class="progress-bar bg-warning" role="progressbar"
+                                 style="width: {{ item.learning_percent }}%;"
+                                 aria-valuenow="{{ item.learning_percent }}" aria-valuemin="0" aria-valuemax="100"
+                                 title="На повторении: {{ item.learning_cards }}">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if item.review_count > 0 %}
+                            {{ item.accuracy_percent }}% <span class="text-muted small">({{ item.review_count }} повт.)</span>
+                        {% else %}
+                            <span class="text-muted small">Нет ответов</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">
+                        {% if item.last_reviewed_at %}
+                            {{ item.last_reviewed_at|date:"d.m.Y H:i" }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.total_cards > 0 %}
+                            <a href="{% url 'deck_study' item.deck.pk %}?restart=1" class="btn btn-outline-primary btn-sm w-100">
+                                Тренировать
+                            </a>
+                        {% else %}
+                            <a href="{% url 'deck_detail' item.deck.pk %}" class="btn btn-outline-secondary btn-sm w-100">
+                                Открыть
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card-body text-center py-4 text-muted">
+        Колоды ещё не созданы.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

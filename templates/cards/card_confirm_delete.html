@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление карточки — LangCards{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card bg-white">
+            <div class="card-header bg-white py-3">
+                <h1 class="h5 mb-0">Удаление карточки</h1>
+            </div>
+            <div class="card-body">
+                <p>Удалить карточку <strong>«{{ card.front_text }} — {{ card.back_text }}»</strong> из колоды «{{ deck.title }}»?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">Удалить карточку</button>
+                        <a href="{% url 'deck_detail' deck.pk %}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
